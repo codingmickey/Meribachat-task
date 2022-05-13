@@ -2,9 +2,10 @@ import asyncHandler from 'express-async-handler';
 import generateToken from '../utils/generateToken.js';
 import sendMail from '../utils/sendMail.js';
 import User from '../models/userModel.js';
+import Log from '../models/logModel.js';
 
 // Auth user & get token
-// POST /users/login
+// POST /user/login
 // Public
 const authUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -26,7 +27,7 @@ const authUser = asyncHandler(async (req, res) => {
 });
 
 // Register a new user
-// POST /users/signup
+// POST /user/signup
 // Public
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -61,7 +62,7 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 // Get user profile
-// GET /users/profile
+// GET /user/profile
 // Private
 const getUserProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
@@ -80,7 +81,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
 });
 
 // Update user profile
-// PUT /users/profile
+// PUT /user/profile
 // Private
 const updateUserProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
@@ -88,6 +89,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
   if (user) {
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
+
     if (req.body.password) {
       user.password = req.body.password;
     }
@@ -108,7 +110,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 });
 
 // Get all users
-// GET /users
+// GET /user
 // Private/Admin
 const getUsers = asyncHandler(async (req, res) => {
   const users = await User.find({});
@@ -116,7 +118,7 @@ const getUsers = asyncHandler(async (req, res) => {
 });
 
 // Delete user
-// DELETE /users/:id
+// DELETE /user/:id
 // Private/Admin
 const deleteUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
@@ -131,7 +133,7 @@ const deleteUser = asyncHandler(async (req, res) => {
 });
 
 // Get user by ID
-// GET /users/:id
+// GET /user/:id
 // Private/Admin
 const getUserById = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id).select('-password');
@@ -145,7 +147,7 @@ const getUserById = asyncHandler(async (req, res) => {
 });
 
 // Update user
-// PUT /users/:id
+// PUT /user/:id
 // Private/Admin
 const updateUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
@@ -169,6 +171,42 @@ const updateUser = asyncHandler(async (req, res) => {
   }
 });
 
+// Update user activity
+// PUT /user/userActivity
+// Private
+const updateUserActivity = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (user) {
+    user.name = req.body.name || user.name;
+    const { activity, description } = req.body;
+
+    const newLog = await Log.create({
+      activity,
+      description,
+    });
+    user.log.push(newLog);
+
+    if (req.body.userLogged) {
+      user.isUserLogged = true;
+      user.loginTime = new Date();
+    }
+    if (req.body.userLogout) {
+      user.isUserLogged = false;
+      user.logoutTime = new Date();
+    }
+    if (req.body.userAt) {
+      if (user.isUserLogged) user.userAtPage = req.body.userAt;
+    }
+    const updatedUser = await user.save();
+
+    res.json(updatedUser);
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
+});
+
 export {
   authUser,
   registerUser,
@@ -178,4 +216,5 @@ export {
   deleteUser,
   getUserById,
   updateUser,
+  updateUserActivity,
 };

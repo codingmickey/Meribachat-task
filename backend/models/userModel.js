@@ -21,6 +21,23 @@ const userSchema = mongoose.Schema(
       required: true,
       default: false,
     },
+    isUserLogged: {
+      type: Boolean,
+      default: false,
+    },
+    loginTime: {
+      type: Date,
+    },
+    logoutTime: {
+      type: Date,
+    },
+    userAtPage: {
+      type: String,
+    },
+    log: {
+      type: Array,
+      default: [],
+    },
   },
   {
     timestamps: true,

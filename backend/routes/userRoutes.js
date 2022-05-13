@@ -9,22 +9,26 @@ import {
   deleteUser,
   getUserById,
   updateUser,
+  updateUserActivity,
 } from '../controllers/userController.js';
 
 const userRouter = express.Router();
 
 import { verifyUser, verifyAdmin } from '../middleware/authMiddleware.js';
 
-userRouter.route('/').get(verifyUser, verifyAdmin, getUsers);
+userRouter.get('/', verifyUser, verifyAdmin, getUsers);
 
 userRouter.post('/login', authUser);
 
-userRouter.route('/signup').post(registerUser);
+userRouter.post('/signup', registerUser);
+
+userRouter.put('/userActivity', verifyUser, updateUserActivity);
 
 userRouter
-  .route('/profile')
+  .route('/data')
   .get(verifyUser, getUserProfile)
   .put(verifyUser, updateUserProfile);
+
 userRouter
   .route('/:id')
   .delete(verifyUser, verifyAdmin, deleteUser)

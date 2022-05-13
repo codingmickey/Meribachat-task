@@ -1,6 +1,7 @@
 dotenv.config();
 import express from 'express';
 import dotenv from 'dotenv';
+import colors from 'colors';
 import morgan from 'morgan';
 import cors from 'cors';
 
@@ -20,6 +21,7 @@ if (process.env.NODE_ENV === 'development') {
 app.use(express.json());
 app.use(cors({ credentials: true }));
 app.use(cors());
+app.use(express.urlencoded({ extended: false }));
 
 app.use(function (req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
@@ -30,7 +32,7 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.use('/users', userRouter);
+app.use('/user', userRouter);
 
 app.use(notFound);
 app.use(errorHandler);
